@@ -6,6 +6,15 @@ import InfoCard from "./InfoCard";
 export default function App() {
   const [countries, setCountries] = useState([]);
   const [country, setCountry] = useState("worldwide");
+  const [countryInfo, setCountryInfo] = useState({});
+
+  useEffect(() => {
+    fetch("https://disease.sh/v3/covid-19/all")
+      .then((response) => response.json())
+      .then((data) => {
+        setCountryInfo(data);
+      });
+  }, []);
 
   useEffect(() => {
     getCountriesData();
@@ -15,6 +24,7 @@ export default function App() {
     await fetch("https://disease.sh/v3/covid-19/countries")
       .then((response) => response.json())
       .then((data) => {
+        console.log("data--", data);
         const countiress = data.map((country) => ({
           name: country.country,
           value: country.countryInfo.iso2
@@ -24,10 +34,23 @@ export default function App() {
       });
   };
 
-  const onCountryChange = (event) => {
-    const countyCode = event.target.value;
-    console.log("Code", countyCode);
-    setCountry(countyCode);
+  const onCountryChange = async (event) => {
+    const countryCode = event.target.value;
+    console.log("Code", countryCode);
+
+    const url =
+      countryCode == "worldwide"
+        ? "https://disease.sh/v3/covid-19/all"
+        : `https://disease.sh/v3/covid-19/countries/${countryCode}`;
+
+    await fetch(url)
+      .then((response) => response.json())
+      .then((data) => {
+        setCountryInfo(data);
+        console.log("countyrInfo=", data);
+        setCountry(countryCode);
+      });
+    // setCountry(countyCode);
   };
 
   return (
@@ -39,14 +62,29 @@ export default function App() {
           <Select variant="outlined" onChange={onCountryChange} value={country}>
             <MenuItem value="worldwide">worldwide</MenuItem>
             {countries.map((country) => (
-              <MenuItem value={country.value}>{country.name}</MenuItem>
+              <MenuItem value={country.value}>
+                {console.log("country", country)}
+                {country.name}
+              </MenuItem>
             ))}
           </Select>
         </FormControl>
-        <div clasName="infocard__box">
-          <InfoCard />
-          <InfoCard />
-          <InfoCard />
+        <div className="infocard__box">
+          <InfoCard
+            title="Coronavirus Cases"
+            cases={countryInfo.todayCases}
+            total={countryInfo.cases}
+          />
+          <InfoCard
+            title="Recoverd"
+            cases={countryInfo.todayRecovered}
+            total={countryInfo.recovered}
+          />
+          <InfoCard
+            title="Deaths"
+            cases={countryInfo.todayDeaths}
+            total={countryInfo.deaths}
+          />
         </div>
       </div>
     </div>
