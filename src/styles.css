@@ -6,3 +6,11 @@
   display: flex;
   justify-content: space-evenly;
 }
+
+.table {
+  height: 400px;
+  overflow: scroll;
+  overflow-x: hidden;
+  display: flex;
+  justify-content: space-between;
+}
